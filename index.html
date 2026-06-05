@@ -1,0 +1,443 @@
+
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Rubik:wght@300;400;500;600;700&display=swap');
+* { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --app-bg: #0f0f13; --surface: #1a1a22; --surface2: #22222e; --surface3: #2a2a38;
+  --accent: #7c6af7; --accent2: #a78bfa; --accent-glow: rgba(124,106,247,0.2);
+  --success: #34d399; --warning: #fbbf24; --danger: #f87171;
+  --text1: #f0eeff; --text2: #9490b8; --text3: #5c5878;
+  --border: rgba(255,255,255,0.07); --radius: 16px; --radius-sm: 10px;
+}
+body { font-family: 'Rubik', sans-serif; background: var(--app-bg); color: var(--text1); direction: rtl; min-height: 100vh; }
+.app { max-width: 390px; margin: 0 auto; min-height: 100vh; display: flex; flex-direction: column; }
+.header { padding: 20px 20px 12px; position: sticky; top: 0; background: var(--app-bg); z-index: 10; }
+.header-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; }
+.date-pill { font-size: 12px; color: var(--text2); background: var(--surface); padding: 5px 12px; border-radius: 20px; border: 0.5px solid var(--border); }
+.icon-btn { width: 40px; height: 40px; min-width: 40px; border-radius: 50%; background: var(--surface); border: 0.5px solid var(--border); display: flex; align-items: center; justify-content: center; cursor: pointer; position: relative; }
+.icon-btn svg { width: 20px; height: 20px; display: block; }
+.icon-btn.danger { border-color: rgba(248,113,113,0.3); }
+.icon-btn.danger svg { stroke: var(--danger); }
+.icon-btn.bell svg { stroke: var(--text2); }
+.notif-badge { position: absolute; top: 6px; left: 6px; width: 8px; height: 8px; border-radius: 50%; background: var(--danger); border: 1.5px solid var(--app-bg); }
+.header-greeting { font-size: 22px; font-weight: 600; color: var(--text1); }
+.header-sub { font-size: 13px; color: var(--text2); margin-top: 2px; }
+.stats-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; padding: 0 20px 16px; }
+.stat-card { background: var(--surface); border-radius: var(--radius-sm); padding: 12px 10px; border: 0.5px solid var(--border); text-align: center; }
+.stat-num { font-size: 22px; font-weight: 700; display: block; }
+.stat-num.accent { color: var(--accent2); } .stat-num.success { color: var(--success); } .stat-num.warning { color: var(--warning); }
+.stat-label { font-size: 11px; color: var(--text3); margin-top: 2px; display: block; }
+.tabs { display: flex; gap: 4px; padding: 0 20px 12px; }
+.tab-btn { flex: 1; padding: 8px 4px; border-radius: 20px; border: none; background: transparent; color: var(--text3); font-size: 13px; font-family: 'Rubik', sans-serif; cursor: pointer; }
+.tab-btn.active { background: var(--accent-glow); color: var(--accent2); border: 0.5px solid rgba(124,106,247,0.3); }
+.task-list { flex: 1; padding: 0 20px; display: flex; flex-direction: column; gap: 10px; padding-bottom: 100px; }
+.task-card { background: var(--surface); border-radius: var(--radius); padding: 14px 16px; border: 0.5px solid var(--border); display: flex; align-items: flex-start; gap: 12px; cursor: pointer; position: relative; overflow: hidden; }
+.task-card::before { content: ''; position: absolute; right: 0; top: 0; bottom: 0; width: 3px; border-radius: 0 var(--radius) var(--radius) 0; }
+.task-card.priority-high::before { background: var(--danger); }
+.task-card.priority-med::before { background: var(--warning); }
+.task-card.priority-low::before { background: var(--success); }
+.task-card.done { opacity: 0.55; }
+.check-circle { width: 24px; height: 24px; min-width: 24px; border-radius: 50%; border: 2px solid var(--surface3); display: flex; align-items: center; justify-content: center; cursor: pointer; margin-top: 1px; }
+.check-circle.checked { background: var(--success); border-color: var(--success); }
+.check-circle svg { width: 12px; height: 12px; display: none; }
+.check-circle.checked svg { display: block; }
+.task-body { flex: 1; min-width: 0; }
+.task-title { font-size: 14px; font-weight: 500; color: var(--text1); line-height: 1.4; }
+.done .task-title { text-decoration: line-through; color: var(--text3); }
+.task-meta { display: flex; align-items: center; gap: 8px; margin-top: 6px; flex-wrap: wrap; }
+.tag { font-size: 10px; padding: 2px 8px; border-radius: 10px; font-weight: 500; }
+.tag.work { background: rgba(124,106,247,0.15); color: var(--accent2); }
+.tag.personal { background: rgba(251,191,36,0.15); color: var(--warning); }
+.tag.health { background: rgba(52,211,153,0.15); color: var(--success); }
+.tag.family { background: rgba(248,113,113,0.15); color: var(--danger); }
+.task-time { font-size: 11px; color: var(--text3); display: flex; align-items: center; gap: 3px; }
+.task-time svg { width: 11px; height: 11px; stroke: var(--text3); flex-shrink: 0; }
+.reminder-badge { font-size: 10px; background: rgba(124,106,247,0.15); color: var(--accent2); padding: 2px 7px; border-radius: 10px; border: 0.5px solid rgba(124,106,247,0.25); display: flex; align-items: center; gap: 3px; }
+.reminder-badge svg { width: 10px; height: 10px; stroke: var(--accent2); flex-shrink: 0; }
+.task-notes { font-size: 12px; color: var(--text2); margin-top: 8px; line-height: 1.5; }
+.expanded-actions { display: none; flex-direction: row; gap: 6px; margin-top: 10px; padding-top: 10px; border-top: 0.5px solid var(--border); }
+.task-card.expanded .expanded-actions { display: flex; }
+.action-mini { flex: 1; padding: 6px; border-radius: 8px; border: 0.5px solid var(--border); background: transparent; font-size: 11px; font-family: 'Rubik', sans-serif; cursor: pointer; color: var(--text2); display: flex; align-items: center; justify-content: center; gap: 4px; }
+.action-mini svg { width: 13px; height: 13px; flex-shrink: 0; }
+.action-mini.del { color: var(--danger); border-color: rgba(248,113,113,0.2); }
+.action-mini.del svg { stroke: var(--danger); }
+.action-mini.remind { color: var(--accent2); border-color: rgba(124,106,247,0.2); }
+.action-mini.remind svg { stroke: var(--accent2); }
+.add-btn { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%); background: var(--accent); color: #fff; border: none; border-radius: 28px; padding: 14px 32px; font-size: 15px; font-family: 'Rubik', sans-serif; font-weight: 500; cursor: pointer; display: flex; align-items: center; gap: 8px; z-index: 20; }
+.add-btn svg { width: 18px; height: 18px; stroke: #fff; }
+.modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.7); z-index: 30; display: flex; align-items: flex-end; justify-content: center; opacity: 0; pointer-events: none; transition: opacity 0.25s; }
+.modal-overlay.open { opacity: 1; pointer-events: all; }
+.modal { background: var(--surface); border-radius: 24px 24px 0 0; padding: 24px 20px 40px; width: 100%; max-width: 390px; transform: translateY(100%); transition: transform 0.3s cubic-bezier(0.34,1.56,0.64,1); border-top: 0.5px solid var(--border); }
+.modal-overlay.open .modal { transform: translateY(0); }
+.modal-handle { width: 40px; height: 4px; background: var(--surface3); border-radius: 2px; margin: 0 auto 20px; }
+.modal-title { font-size: 18px; font-weight: 600; margin-bottom: 20px; color: var(--text1); }
+.form-group { margin-bottom: 14px; }
+.form-label { font-size: 12px; color: var(--text2); margin-bottom: 6px; display: block; }
+.form-input, .form-select, .form-textarea { width: 100%; background: var(--surface2); border: 0.5px solid var(--border); border-radius: var(--radius-sm); padding: 11px 14px; font-size: 14px; font-family: 'Rubik', sans-serif; color: var(--text1); outline: none; direction: rtl; }
+.form-input:focus, .form-select:focus, .form-textarea:focus { border-color: rgba(124,106,247,0.5); }
+.form-select { cursor: pointer; }
+.form-textarea { resize: none; height: 70px; line-height: 1.5; }
+.priority-btns { display: flex; gap: 8px; }
+.pri-btn { flex: 1; padding: 9px; border-radius: 8px; border: 0.5px solid var(--border); background: transparent; font-size: 12px; font-family: 'Rubik', sans-serif; cursor: pointer; color: var(--text2); }
+.pri-btn.sel-high { background: rgba(248,113,113,0.15); color: var(--danger); border-color: rgba(248,113,113,0.3); }
+.pri-btn.sel-med { background: rgba(251,191,36,0.15); color: var(--warning); border-color: rgba(251,191,36,0.3); }
+.pri-btn.sel-low { background: rgba(52,211,153,0.15); color: var(--success); border-color: rgba(52,211,153,0.3); }
+.reminder-toggle-row { display: flex; align-items: center; justify-content: space-between; background: var(--surface2); border-radius: var(--radius-sm); padding: 12px 14px; border: 0.5px solid var(--border); cursor: pointer; }
+.toggle-label { font-size: 14px; color: var(--text1); }
+.toggle-sub { font-size: 11px; color: var(--text3); margin-top: 2px; }
+.toggle-switch { width: 44px; height: 24px; border-radius: 12px; background: var(--surface3); position: relative; transition: background 0.2s; border: none; flex-shrink: 0; }
+.toggle-switch.on { background: var(--accent); }
+.toggle-knob { position: absolute; top: 3px; right: 3px; width: 18px; height: 18px; border-radius: 50%; background: #fff; transition: transform 0.2s; }
+.toggle-switch.on .toggle-knob { transform: translateX(-20px); }
+.submit-btn { width: 100%; background: var(--accent); color: #fff; border: none; border-radius: var(--radius-sm); padding: 14px; font-size: 15px; font-weight: 500; font-family: 'Rubik', sans-serif; cursor: pointer; margin-top: 6px; }
+.toast { position: fixed; top: 20px; left: 50%; transform: translateX(-50%) translateY(-80px); background: var(--surface3); color: var(--text1); padding: 12px 20px; border-radius: 24px; font-size: 13px; z-index: 100; border: 0.5px solid var(--border); display: flex; align-items: center; gap: 8px; transition: transform 0.35s cubic-bezier(0.34,1.56,0.64,1); white-space: nowrap; max-width: 88%; }
+.toast.show { transform: translateX(-50%) translateY(0); }
+.toast svg { width: 16px; height: 16px; stroke: var(--success); flex-shrink: 0; }
+.empty-state { text-align: center; padding: 40px 20px; color: var(--text3); }
+.empty-state svg { width: 40px; height: 40px; stroke: var(--text3); margin: 0 auto 12px; display: block; }
+.empty-state p { font-size: 14px; line-height: 1.6; }
+.section-header { font-size: 11px; color: var(--text3); letter-spacing: 0.08em; padding: 4px 0 8px; }
+.progress-bar { height: 3px; background: var(--surface3); border-radius: 2px; margin: 10px 20px 0; overflow: hidden; }
+.progress-fill { height: 100%; background: var(--accent); border-radius: 2px; transition: width 0.5s ease; }
+.confirm-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.75); z-index: 40; display: flex; align-items: center; justify-content: center; opacity: 0; pointer-events: none; transition: opacity 0.2s; padding: 20px; }
+.confirm-overlay.open { opacity: 1; pointer-events: all; }
+.confirm-box { background: var(--surface); border-radius: 20px; padding: 28px 24px 24px; width: 100%; max-width: 320px; border: 0.5px solid rgba(248,113,113,0.2); text-align: center; transform: scale(0.9); transition: transform 0.25s cubic-bezier(0.34,1.56,0.64,1); }
+.confirm-overlay.open .confirm-box { transform: scale(1); }
+.confirm-icon { width: 52px; height: 52px; border-radius: 50%; background: rgba(248,113,113,0.12); display: flex; align-items: center; justify-content: center; margin: 0 auto 16px; }
+.confirm-icon svg { width: 24px; height: 24px; stroke: var(--danger); }
+.confirm-title { font-size: 17px; font-weight: 600; color: var(--text1); margin-bottom: 8px; }
+.confirm-sub { font-size: 13px; color: var(--text2); line-height: 1.5; margin-bottom: 24px; }
+.confirm-btns { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.btn-cancel { background: var(--surface2); color: var(--text2); border: 0.5px solid var(--border); border-radius: var(--radius-sm); padding: 12px; font-size: 14px; font-family: 'Rubik', sans-serif; cursor: pointer; }
+.btn-confirm-del { background: var(--danger); color: #fff; border: none; border-radius: var(--radius-sm); padding: 12px; font-size: 14px; font-weight: 500; font-family: 'Rubik', sans-serif; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px; }
+.btn-confirm-del svg { width: 14px; height: 14px; stroke: #fff; }
+</style>
+
+<h2 class="sr-only" style="position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0,0,0,0)">אפליקציית ניהול משימות</h2>
+
+<div class="app">
+  <div class="header">
+    <div class="header-top">
+      <div>
+        <div class="header-greeting">המשימות שלי ✦</div>
+        <div class="header-sub" id="today-label"></div>
+      </div>
+      <div style="display:flex;gap:8px;align-items:center;">
+        <div class="date-pill" id="date-pill"></div>
+        <div class="icon-btn danger" onclick="openConfirm()" aria-label="נקה הכל">
+          <svg viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4h6v2"/>
+          </svg>
+        </div>
+        <div class="icon-btn bell" onclick="testSound()" aria-label="בדוק צליל">
+          <svg viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 01-3.46 0"/>
+          </svg>
+          <div class="notif-badge" id="notif-badge" style="display:none"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="progress-bar"><div class="progress-fill" id="progress-fill" style="width:0%"></div></div>
+  <div style="height:12px"></div>
+
+  <div class="stats-row">
+    <div class="stat-card"><span class="stat-num accent" id="stat-total">0</span><span class="stat-label">סה"כ</span></div>
+    <div class="stat-card"><span class="stat-num success" id="stat-done">0</span><span class="stat-label">הושלמו</span></div>
+    <div class="stat-card"><span class="stat-num warning" id="stat-urgent">0</span><span class="stat-label">דחופות</span></div>
+  </div>
+
+  <div class="tabs">
+    <button class="tab-btn active" onclick="setTab('all',this)">הכל</button>
+    <button class="tab-btn" onclick="setTab('active',this)">פעילות</button>
+    <button class="tab-btn" onclick="setTab('done',this)">הושלמו</button>
+    <button class="tab-btn" onclick="setTab('urgent',this)">דחופות</button>
+  </div>
+
+  <div class="task-list" id="task-list"></div>
+</div>
+
+<button class="add-btn" onclick="openModal()">
+  <svg viewBox="0 0 24 24" fill="none" stroke-width="2.2" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+  משימה חדשה
+</button>
+
+<div class="modal-overlay" id="modal-overlay" onclick="closeOnBg(event)">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <div class="modal-title">משימה חדשה</div>
+    <div class="form-group">
+      <label class="form-label">כותרת המשימה *</label>
+      <input class="form-input" id="inp-title" placeholder="מה צריך לעשות?" />
+    </div>
+    <div class="form-group">
+      <label class="form-label">הערות (אופציונלי)</label>
+      <textarea class="form-textarea" id="inp-notes" placeholder="פרטים נוספים..."></textarea>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px;">
+      <div class="form-group" style="margin:0"><label class="form-label">תאריך</label><input class="form-input" type="date" id="inp-date"/></div>
+      <div class="form-group" style="margin:0"><label class="form-label">שעה</label><input class="form-input" type="time" id="inp-time"/></div>
+    </div>
+    <div class="form-group">
+      <label class="form-label">קטגוריה</label>
+      <select class="form-select" id="inp-cat">
+        <option value="work">💼 עבודה</option>
+        <option value="personal">⭐ אישי</option>
+        <option value="health">🏃 בריאות</option>
+        <option value="family">🏠 משפחה</option>
+      </select>
+    </div>
+    <div class="form-group">
+      <label class="form-label">עדיפות</label>
+      <div class="priority-btns">
+        <button class="pri-btn" id="pri-high" onclick="selPri('high')">🔴 דחוף</button>
+        <button class="pri-btn" id="pri-med" onclick="selPri('med')">🟡 בינוני</button>
+        <button class="pri-btn sel-low" id="pri-low" onclick="selPri('low')">🟢 נמוך</button>
+      </div>
+    </div>
+    <div class="form-group">
+      <div class="reminder-toggle-row" onclick="toggleReminder()">
+        <div>
+          <div class="toggle-label">הפעל תזכורת עם צליל</div>
+          <div class="toggle-sub">התראה קולית בזמן המשימה</div>
+        </div>
+        <div class="toggle-switch" id="reminder-toggle"><div class="toggle-knob"></div></div>
+      </div>
+    </div>
+    <button class="submit-btn" onclick="addTask()">הוסף משימה</button>
+  </div>
+</div>
+
+<div class="confirm-overlay" id="confirm-overlay" onclick="closeConfirmBg(event)">
+  <div class="confirm-box">
+    <div class="confirm-icon">
+      <svg viewBox="0 0 24 24" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+        <polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/><path d="M9 6V4h6v2"/>
+      </svg>
+    </div>
+    <div class="confirm-title">לנקות את כל המשימות?</div>
+    <div class="confirm-sub" id="confirm-sub-text"></div>
+    <div class="confirm-btns">
+      <button class="btn-cancel" onclick="closeConfirm()">ביטול</button>
+      <button class="btn-confirm-del" onclick="clearAllTasks()">
+        <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/></svg>
+        נקה הכל
+      </button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast">
+  <svg viewBox="0 0 24 24" fill="none" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+  <span id="toast-msg"></span>
+</div>
+
+<script>
+let tasks = [], currentTab = 'all', selectedPriority = 'low', reminderOn = false, expandedId = null;
+let audioCtx = null;
+
+function getAudioCtx() {
+  if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  return audioCtx;
+}
+function playAlert(type) {
+  try {
+    const ctx = getAudioCtx();
+    if (ctx.state === 'suspended') ctx.resume();
+    const notes = type === 'reminder'
+      ? [{f:880,t:0,d:0.15},{f:0,t:0.15,d:0.05},{f:880,t:0.2,d:0.15},{f:0,t:0.35,d:0.05},{f:1174,t:0.4,d:0.3}]
+      : [{f:660,t:0,d:0.1}];
+    notes.forEach(n => {
+      if (!n.f) return;
+      const osc = ctx.createOscillator(), gain = ctx.createGain();
+      osc.connect(gain); gain.connect(ctx.destination);
+      osc.type = 'sine'; osc.frequency.value = n.f;
+      const now = ctx.currentTime;
+      gain.gain.setValueAtTime(0, now+n.t);
+      gain.gain.linearRampToValueAtTime(0.35, now+n.t+0.01);
+      gain.gain.exponentialRampToValueAtTime(0.001, now+n.t+n.d);
+      osc.start(now+n.t); osc.stop(now+n.t+n.d+0.05);
+    });
+  } catch(e) {}
+}
+function testSound() { playAlert('reminder'); showToast('🔔 בדיקת צליל התראה'); }
+
+const catNames = {work:'עבודה',personal:'אישי',health:'בריאות',family:'משפחה'};
+const days = ['ראשון','שני','שלישי','רביעי','חמישי','שישי','שבת'];
+const months = ['ינואר','פברואר','מרץ','אפריל','מאי','יוני','יולי','אוגוסט','ספטמבר','אוקטובר','נובמבר','דצמבר'];
+
+function init() {
+  const now = new Date();
+  document.getElementById('today-label').textContent = `יום ${days[now.getDay()]}, ${now.getDate()} ב${months[now.getMonth()]}`;
+  document.getElementById('date-pill').textContent = `${now.getDate()}/${now.getMonth()+1}/${now.getFullYear()}`;
+  const today = now.toISOString().slice(0,10);
+  document.getElementById('inp-date').value = today;
+  document.getElementById('inp-time').value = now.toTimeString().slice(0,5);
+  tasks = [
+    {id:1,title:'לשלוח דוח שבועי למנהל',notes:'',date:today,time:'09:00',cat:'work',priority:'high',done:false,reminder:true},
+    {id:2,title:'פגישת צוות פיתוח',notes:'לדון בספרינט הבא',date:today,time:'14:30',cat:'work',priority:'high',done:false,reminder:true},
+    {id:3,title:'קנות מצרכים לשבת',notes:'חלב, לחם, ירקות',date:today,time:'18:00',cat:'personal',priority:'med',done:false,reminder:false},
+    {id:4,title:'אימון כושר – 45 דקות',notes:'',date:today,time:'07:00',cat:'health',priority:'med',done:true,reminder:false},
+    {id:5,title:'שיחה עם אמא',notes:'להתקשר אחרי 20:00',date:today,time:'20:00',cat:'family',priority:'low',done:false,reminder:true},
+  ];
+  render();
+  if ('Notification' in window) Notification.requestPermission();
+  setInterval(checkReminders, 30000);
+}
+
+function checkReminders() {
+  const now = new Date();
+  const today = now.toISOString().slice(0,10);
+  const hm = `${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`;
+  tasks.forEach(t => {
+    if (!t.done && t.reminder && t.date===today && t.time===hm) {
+      playAlert('reminder');
+      showToast('⏰ תזכורת: '+t.title);
+      if (Notification.permission==='granted') try { new Notification('תזכורת',{body:t.title}); } catch(e) {}
+    }
+  });
+}
+
+const svgCheck   = `<svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>`;
+const svgClock   = `<svg viewBox="0 0 24 24" fill="none" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>`;
+const svgBell    = `<svg viewBox="0 0 24 24" fill="none" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 01-3.46 0"/></svg>`;
+const svgBellOff = `<svg viewBox="0 0 24 24" fill="none" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M13.73 21a2 2 0 01-3.46 0"/><path d="M18.63 13A17.89 17.89 0 0118 8"/><path d="M6.26 6.26A5.86 5.86 0 006 8c0 7-3 9-3 9h14"/><path d="M18 8a6 6 0 00-9.33-5"/><line x1="1" y1="1" x2="23" y2="23"/></svg>`;
+const svgTrash   = `<svg viewBox="0 0 24 24" fill="none" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/></svg>`;
+const svgStar    = `<svg viewBox="0 0 24 24" fill="none" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>`;
+
+function render() {
+  let filtered;
+  if      (currentTab === 'active') filtered = tasks.filter(t => !t.done);
+  else if (currentTab === 'done')   filtered = tasks.filter(t => t.done);
+  else if (currentTab === 'urgent') filtered = tasks.filter(t => t.priority === 'high');
+  else                              filtered = tasks;
+
+  const done   = tasks.filter(t => t.done).length;
+  const total  = tasks.length;
+  const urgent = tasks.filter(t => t.priority === 'high').length;
+  document.getElementById('stat-total').textContent  = total;
+  document.getElementById('stat-done').textContent   = done;
+  document.getElementById('stat-urgent').textContent = urgent;
+  document.getElementById('progress-fill').style.width = (total > 0 ? Math.round((done/total)*100) : 0) + '%';
+  document.getElementById('notif-badge').style.display = tasks.filter(t => !t.done && t.reminder).length > 0 ? 'block' : 'none';
+
+  const list = document.getElementById('task-list');
+  if (filtered.length === 0) {
+    const msg = currentTab === 'urgent' ? 'אין משימות דחופות' : tasks.length === 0 ? 'הרשימה ריקה ומוכנה<br>להתחלה חדשה!' : 'אין משימות להצגה';
+    list.innerHTML = `<div class="empty-state">${svgStar}<p>${msg}</p></div>`;
+    return;
+  }
+
+  if (currentTab === 'urgent') {
+    const active = filtered.filter(t => !t.done);
+    const done_u = filtered.filter(t => t.done);
+    let html = '';
+    if (active.length > 0) {
+      html += `<div class="section-header">🔴 פעילות</div>`;
+      active.forEach(t => html += taskHTML(t));
+    }
+    if (done_u.length > 0) {
+      html += `<div class="section-header" style="margin-top:8px">✅ הושלמו</div>`;
+      done_u.forEach(t => html += taskHTML(t));
+    }
+    list.innerHTML = html;
+    return;
+  }
+
+  const urg  = filtered.filter(t => t.priority === 'high' && !t.done);
+  const rest = filtered.filter(t => !(t.priority === 'high' && !t.done));
+  let html = '';
+  if (urg.length > 0) {
+    html += `<div class="section-header">🔴 דחופות</div>`;
+    urg.forEach(t => html += taskHTML(t));
+    if (rest.length > 0) html += `<div class="section-header" style="margin-top:8px">שאר המשימות</div>`;
+  }
+  rest.forEach(t => html += taskHTML(t));
+  list.innerHTML = html;
+}
+
+function taskHTML(t) {
+  const exp = expandedId === t.id;
+  return `<div class="task-card priority-${t.priority} ${t.done?'done':''} ${exp?'expanded':''}" id="task-${t.id}" onclick="toggleExpand(${t.id})">
+    <div class="check-circle ${t.done?'checked':''}" onclick="event.stopPropagation();toggleDone(${t.id})">${t.done?svgCheck:''}</div>
+    <div class="task-body">
+      <div class="task-title">${t.title}</div>
+      <div class="task-meta">
+        <span class="tag ${t.cat}">${catNames[t.cat]}</span>
+        ${t.time?`<span class="task-time">${svgClock}${t.time}</span>`:''}
+        ${t.reminder?`<span class="reminder-badge">${svgBell}תזכורת</span>`:''}
+      </div>
+      ${t.notes&&exp?`<div class="task-notes">${t.notes}</div>`:''}
+      <div class="expanded-actions">
+        <button class="action-mini del" onclick="event.stopPropagation();deleteTask(${t.id})">${svgTrash}מחק</button>
+        <button class="action-mini remind" onclick="event.stopPropagation();toggleTaskReminder(${t.id})">${t.reminder?svgBellOff:svgBell}${t.reminder?'בטל תזכורת':'הוסף תזכורת'}</button>
+      </div>
+    </div>
+  </div>`;
+}
+
+function toggleExpand(id) { expandedId = expandedId===id ? null : id; render(); }
+function toggleDone(id) {
+  const t = tasks.find(x=>x.id===id); if(!t) return;
+  t.done = !t.done; playAlert('tap'); render();
+  showToast(t.done ? '✅ משימה הושלמה!' : '↩️ משימה נפתחה מחדש');
+}
+function deleteTask(id) { tasks = tasks.filter(t=>t.id!==id); expandedId=null; render(); showToast('🗑️ משימה נמחקה'); }
+function toggleTaskReminder(id) {
+  const t = tasks.find(x=>x.id===id); if(!t) return;
+  t.reminder = !t.reminder; render();
+  showToast(t.reminder ? '🔔 תזכורת הופעלה' : '🔕 תזכורת בוטלה');
+}
+function setTab(tab, btn) {
+  currentTab = tab;
+  document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active'); expandedId=null; render();
+}
+function openConfirm() {
+  if (tasks.length===0) { showToast('אין משימות לנקות'); return; }
+  document.getElementById('confirm-sub-text').textContent = (tasks.length===1?'יש משימה אחת ברשימה.':'יש '+tasks.length+' משימות ברשימה.')+' פעולה זו לא ניתנת לביטול.';
+  document.getElementById('confirm-overlay').classList.add('open');
+}
+function closeConfirm() { document.getElementById('confirm-overlay').classList.remove('open'); }
+function closeConfirmBg(e) { if(e.target===document.getElementById('confirm-overlay')) closeConfirm(); }
+function clearAllTasks() { const c=tasks.length; tasks=[]; expandedId=null; closeConfirm(); render(); showToast('🗑️ '+c+' משימות נמחקו — הרשימה ריקה'); }
+function openModal() {
+  document.getElementById('modal-overlay').classList.add('open');
+  document.getElementById('inp-title').focus();
+  selPri('low'); reminderOn=false;
+  document.getElementById('reminder-toggle').classList.remove('on');
+}
+function closeModal() {
+  document.getElementById('modal-overlay').classList.remove('open');
+  document.getElementById('inp-title').value=''; document.getElementById('inp-notes').value='';
+}
+function closeOnBg(e) { if(e.target===document.getElementById('modal-overlay')) closeModal(); }
+function selPri(p) {
+  selectedPriority=p;
+  ['high','med','low'].forEach(x=>{ document.getElementById('pri-'+x).className='pri-btn'+(x===p?' sel-'+x:''); });
+}
+function toggleReminder() { reminderOn=!reminderOn; document.getElementById('reminder-toggle').classList.toggle('on',reminderOn); }
+function addTask() {
+  const title=document.getElementById('inp-title').value.trim();
+  if(!title) { document.getElementById('inp-title').focus(); showToast('⚠️ הכנס כותרת למשימה'); return; }
+  const t={id:Date.now(),title,notes:document.getElementById('inp-notes').value.trim(),date:document.getElementById('inp-date').value,time:document.getElementById('inp-time').value,cat:document.getElementById('inp-cat').value,priority:selectedPriority,done:false,reminder:reminderOn};
+  tasks.unshift(t); closeModal(); render(); showToast('✅ משימה נוספה!');
+  if(reminderOn&&t.date&&t.time){
+    const delay=new Date(t.date+'T'+t.time)-Date.now();
+    if(delay>0&&delay<86400000){
+      setTimeout(()=>{
+        playAlert('reminder');
+        showToast('⏰ '+t.title);
+        if(Notification.permission==='granted') try{new Notification('תזכורת',{body:t.title});}catch(e){}
+      },delay);
+    }
+  }
+}
+let toastTimer;
+function showToast(msg) {
+  const el=document.getElementById('toast'); document.getElementById('toast-msg').textContent=msg;
+  el.classList.add('show'); clearTimeout(toastTimer); toastTimer=setTimeout(()=>el.classList.remove('show'),2600);
+}
+init();
+</script>
